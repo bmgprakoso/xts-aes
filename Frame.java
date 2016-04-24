@@ -1,4 +1,4 @@
-package tugas1prog_CIS2016;
+
 
 import java.awt.Color;
 import javax.swing.JFrame;

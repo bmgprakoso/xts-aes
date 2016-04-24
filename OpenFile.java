@@ -5,7 +5,7 @@
  *
  * Copyright 2010 Omar Abdillah, Prahesa Kusuma Setia, Yahya Muhammad
  */
-package tugas1prog_CIS2016;
+
 
 import java.io.*;
 import javax.swing.JFileChooser;

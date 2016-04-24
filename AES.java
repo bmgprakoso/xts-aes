@@ -1,4 +1,6 @@
-import java.util.*;
+
+
+import java.util.Arrays;
 
 /** AES - implementation of the AES block cipher in Java.
  *  <p> Illustrative code for the AES block cipher (Rijndael).
@@ -48,24 +50,21 @@ class AES {
      */
     public String traceInfo = "";
 
-    /** AES constants and variables. */
+    /** konstan variabel yang digunakan dalam kelas ini */
     public static final int
         ROUNDS = 14,		// AES has 10-14 rounds
         BLOCK_SIZE = 16,	// AES uses 128-bit (16 byte) key
         KEY_LENGTH = 32;	// AES uses 128/192/256-bit (16/24/32 byte) key
 
-    // Define key attributes for current AES instance
-    /** number of rounds used given AES key set on this instance. */
+    /** jumlah round yang digunakan sesuai key yang diberikan */
     int numRounds;
     /** encryption round keys derived from AES key set on this instance. */
     byte[][] Ke;
     /** decryption round keys derived from AES key set on this instance. */
     byte[][] Kd;
 
-    /** AES encryption S-box.
-     *  <p>See FIPS-197 section 5.1.1 or Stallings section 5.2.
-     *  Note that hex values have been converted to decimal for easy table
-     *  specification in Java.
+    /** 
+     *  atribut yang berisi array representasi dari AES encryption S-Box
      */
     static final byte[] S = {
 	99, 124, 119, 123, -14, 107, 111, -59, 48, 1, 103, 43, -2, -41, -85, 118, 
@@ -85,10 +84,8 @@ class AES {
 	-31, -8, -104, 17, 105, -39, -114, -108, -101, 30, -121, -23, -50, 85, 40, -33, 
 	-116, -95, -119, 13, -65, -26, 66, 104, 65, -103, 45, 15, -80, 84, -69, 22 }; 
 
-    /** AES decryption S-box.
-     *  <p>See FIPS-197 section 5.1.1 or Stallings section 5.2.
-     *  Note that hex values have been converted to decimal for easy table
-     *  specification in Java.
+    /** 
+     *  atribut yang berisi array representasi dari AES decryption S-Box
      */
     static final byte[] Si = {
 	82, 9, 106, -43, 48, 54, -91, 56, -65, 64, -93, -98, -127, -13, -41, -5, 
@@ -108,10 +105,8 @@ class AES {
 	-96, -32, 59, 77, -82, 42, -11, -80, -56, -21, -69, 60, -125, 83, -103, 97, 
 	23, 43, 4, 126, -70, 119, -42, 38, -31, 105, 20, 99, 85, 33, 12, 125 }; 
 
-    /** AES key schedule round constant table.
-     *  <p>See FIPS-197 section 5.1.1 or Stallings section 5.2.
-     *  Note that hex values have been converted to decimal for easy table
-     *  specification in Java, and that indexes start at 1, hence initial 0 entry.
+     /** 
+     *  atribut yang berisi array representasi dari AES key schedule round constant table.
      */
     static final byte[] rcon = {
 	0,
@@ -121,7 +116,7 @@ class AES {
 	99, -58, -105, 53, 106, -44, 
 	-77, 125, -6, -17, -59, -111 }; 
 
-    /** Internal AES constants and variables. */
+    /** Variabel internal dari kelas AES yang konstan*/
     public static final int
         COL_SIZE = 4,				// depth of each column in AES state variable
         NUM_COLS = BLOCK_SIZE / COL_SIZE,	// number of columns in AES state variable
@@ -135,8 +130,9 @@ class AES {
     /* log table for field GF(2^m) used to speed up multiplications. */
     static final int[] log =  new int[256];
 
-    /** static code to initialise the log and alog tables.
-     *  Used to implement multiplication in GF(2^8).
+    /*
+     * kode statik yang digunakan untuk menginisiasi  log dan alog tabel
+     * digunakan untuk mengimplementasikan multiplication di GF(2^8)
      */
     static {
         int i, j;
@@ -150,14 +146,16 @@ class AES {
         for (i = 1; i < 255; i++) log[alog[i]] = i;
     }
 
-    /** Construct AES object. */
+    /** Konstruktor dari AES*/
     public AES() {
     }
 
-    /** return number of rounds for a given AES key size.
-     *
-     * @param keySize	size of the user key material in bytes.
-     * @return		number of rounds for a given AES key size.
+    /** 
+     * method yang berfungsi untuk menentukan banyaknya round yang diperlukan 
+     * berdasarkan key yang digunakan
+     * 
+     * @param keySize ukuran dari key yang digunakan
+     * @return jumlah round berdasarkan key yang digunakan
      */
     public static int getRounds (int keySize) {
         switch (keySize) {
@@ -170,14 +168,15 @@ class AES {
         }
     }
 
-    /** multiply two elements of GF(2^8).
-     *  <p>Using pre-computed log and alog tables for speed.
+    /** 
+     * method yang digunakan untuk melakukan multiplikasi dua elemen dari GF (2^8)
+     *  menggunakan log dan alog tabel untuk mempercepat kinerja
      *
-     *  @param a 1st value to multiply
-     *  @param b 2nd value to multiply
-     *  @return product of a * b module its generator polynomial
+     *  @param a nilai pertama untuk dikalikan
+     *  @param b nilai kedua untuk dikalikan
+     *  @return hasil dari a*b
      */
-    static final int mul (int a, int b) {
+    public static final int mul (int a, int b) {
         return (a != 0 && b != 0) ?
             alog[(log[a & 0xFF] + log[b & 0xFF]) % 255] :
             0;
@@ -196,16 +195,12 @@ class AES {
 
     //......................................................................
     /**
-     * AES encrypt 128-bit plaintext using key previously set.
-     *
-     * <p>Follows cipher specification given in FIPS-197 section 5.1
-     * See pseudo code in Fig 5, and details in this section.
-     *
-     * @param plain the 128-bit plaintext value to encrypt.
-     * @return the encrypted 128-bit ciphertext value.
+     * method yang digunakan untuk enkripsi 128 bit
+     * @param plain 128 bit plaintext yang akan dienkripsi
+     * @return 128 bit sebagai hasil dari enkripsi
      */
     public byte[] encrypt(byte[] plain) {
-	// define working variables
+
 	byte [] a = new byte[BLOCK_SIZE];	// AES state variable
 	byte [] ta = new byte[BLOCK_SIZE];	// AES temp state variable
 	byte [] Ker;				// encrypt keys for current round
@@ -511,49 +506,6 @@ class AES {
 	else
 	    System.out.print("Test Failed. Result was "+Util.toHEX(result)+"\n");
         System.out.println();
-    }
-
-
-    /** self-test routine for AES cipher
-        @param args command line arguments
-     */
-    public static void main (String[] args) {
-	int lev = 2;
-
-	// process command-line variants
-	switch (args.length) {
-	  case 0:	break;
-	  case 1:	lev = Integer.parseInt(args[0]);
-	  		break;
-	  case 3:	self_test(args[0], args[1], args[2], lev);
-	  		System.exit(0);
-	  		break;
-	  case 4:	lev = Integer.parseInt(args[3]);
-			if (lev > 4)	trace_static();
-	  		self_test(args[0], args[1], args[2], lev);
-	  		System.exit(0);
-	  		break;
-	  default:	System.out.println("Usage: AES [lev | key plain cipher {lev}]\n");
-	  		System.exit(0);
-	}
-
-	// trace static tables if requested
-	if (lev > 4)	trace_static();
-
-        // AES test triple (128-bit key test value from FIPS-197)
-        self_test("000102030405060708090a0b0c0d0e0f",
-        	"00112233445566778899aabbccddeeff",
-		"69c4e0d86a7b0430d8cdb78070b4c55a", lev);
-
-        // AES test triple (192-bit key test value from FIPS-197)
-        self_test("000102030405060708090a0b0c0d0e0f1011121314151617",
-        	"00112233445566778899aabbccddeeff",
-		"dda97ca4864cdfe06eaf70a0ec0d7191", lev);
-
-        // AES test triple (256-bit key test value from FIPS-197)
-        self_test("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
-        	"00112233445566778899aabbccddeeff",
-		"8ea2b7ca516745bfeafc49904b496089", lev);
     }
 }
 
